@@ -436,7 +436,372 @@ public class Test{
 
 #### 1、通过反射调用类中的方法
 
+```java
+package reflect;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+/**
+ * @Author AlexanderBai
+ * @data 2019/3/17 9:49
+ */
+interface China{
+    public static final String NATIONAL = "China";
+    public static final String NAME = "AlexanderBai";
+    public void sayChinese();
+    public String sayHello(String name);
+}
+class Person implements China{
+
+    private String name;
+    private int age;
+
+    public Person() {
+    }
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public Person(String name, int age) {
+        this.name=name;
+        this.age=age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    @Override
+    public void sayChinese() {
+        System.out.println("国籍:" +NATIONAL);
+    }
+
+    @Override
+    public String sayHello(String name) {
+        return "你好，我是"+name;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + this.name + '\'' +
+                ", age=" + this.age +
+                '}';
+    }
+}
+
+public class Test{
+    public static void main(String[] args) {
+        Class<?> c=null;
+        try {
+            c=Class.forName("reflect.Person");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Method method = null;
+        try {
+            //①此方法有参数
+            method = c.getMethod("sayHello", String.class);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        String string=null;
+        try {
+            //掉用方法时必须传递对象实例，同时传递对应的参数
+            string= (String) method.invoke(c.newInstance(), "AlexanderBai");
+            System.out.println(string);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            //②此方法无参数
+            Method method1=c.getMethod("sayChinese");
+            try {
+                ////掉用方法时必须传递对象实例
+                method1.invoke(c.newInstance());
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            }
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
 #### 2、调用setter及getter方法
+
+> - **破费版**
+>
+> ```java
+> package reflect;
+> 
+> import java.lang.reflect.InvocationTargetException;
+> import java.lang.reflect.Method;
+> 
+> /**
+>  * @Author AlexanderBai
+>  * @data 2019/3/17 9:49
+>  */
+> interface China{
+>     public static final String NATIONAL = "China";
+>     public static final String NAME = "AlexanderBai";
+>     public void sayChinese();
+>     public String sayHello(String name);
+> }
+> class Person implements China{
+> 
+>     private String name;
+>     private int age;
+> 
+>     public Person() {
+>     }
+> 
+>     public Person(String name) {
+>         this.name = name;
+>     }
+> 
+>     public Person(String name, int age) {
+>         this.name=name;
+>         this.age=age;
+>     }
+> 
+>     public void setAge(int age) {
+>         this.age = age;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+>     public int getAge() {
+>         return age;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+> 
+>     @Override
+>     public void sayChinese() {
+>         System.out.println("国籍:" +NATIONAL);
+>     }
+> 
+>     @Override
+>     public String sayHello(String name) {
+>         return "你好，我是"+name;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Person{" +
+>                 "name='" + this.name + '\'' +
+>                 ", age=" + this.age +
+>                 '}';
+>     }
+> }
+> 
+> public class Test{
+>     public static void main(String[] args) {
+>         Class<?> c=null;
+>         try {
+>             c=Class.forName("reflect.Person");
+>         } catch (ClassNotFoundException e) {
+>             e.printStackTrace();
+>         }
+> 
+>         Method method = null;
+>         try {
+>             //①此方法有参数
+>             method = c.getMethod("setName", String.class);
+>         } catch (NoSuchMethodException e) {
+>             e.printStackTrace();
+>         }
+>         try {
+>             Person newInstance= (Person) c.newInstance();
+>             //掉用方法时必须传递对象实例，同时传递对应的参数
+>             method.invoke(newInstance, "AlexanderBai");
+>             System.out.println(newInstance.getName());
+>         } catch (IllegalAccessException e) {
+>             e.printStackTrace();
+>         } catch (InvocationTargetException e) {
+>             e.printStackTrace();
+>         } catch (InstantiationException e) {
+>             e.printStackTrace();
+>         }
+>     }
+> }
+> ```
+
+> - **改进版**
+>
+> ```java
+> package reflect;
+> 
+> import java.lang.reflect.InvocationTargetException;
+> import java.lang.reflect.Method;
+> 
+> /**
+>  * @Author AlexanderBai
+>  * @data 2019/3/17 9:49
+>  */
+> interface China{
+>     public static final String NATIONAL = "China";
+>     public static final String NAME = "AlexanderBai";
+>     public void sayChinese();
+>     public String sayHello(String name);
+> }
+> class Person implements China{
+> 
+>     private String name;
+>     private int age;
+> 
+>     public Person() {
+>     }
+> 
+>     public Person(String name) {
+>         this.name = name;
+>     }
+> 
+>     public Person(String name, int age) {
+>         this.name=name;
+>         this.age=age;
+>     }
+> 
+>     public void setAge(int age) {
+>         this.age = age;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+>     public int getAge() {
+>         return age;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+> 
+>     @Override
+>     public void sayChinese() {
+>         System.out.println("国籍:" +NATIONAL);
+>     }
+> 
+>     @Override
+>     public String sayHello(String name) {
+>         return "你好，我是"+name;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Person{" +
+>                 "name='" + this.name + '\'' +
+>                 ", age=" + this.age +
+>                 '}';
+>     }
+> }
+> 
+> public class Test{
+>     /**
+>      * @param object   操作的对象
+>      * @param att     操作的属性
+>      * @param value   设置的值    
+>      * @param type    参数的类型
+>      */
+>     public static void setter(Object object, String att, Object value,Class<?> type){
+>         try {
+>             Method method=object.getClass().getMethod("set" + initStr(att), type);
+>             try {
+>                 method.invoke(object, value);
+>             } catch (IllegalAccessException e) {
+>                 e.printStackTrace();
+>             } catch (InvocationTargetException e) {
+>                 e.printStackTrace();
+>             }
+>         } catch (NoSuchMethodException e) {
+>             e.printStackTrace();
+>         }
+>     }
+> 
+>     public static void getter(Object object, String att) {
+>         try {
+>             Method method = object.getClass().getMethod("get" + initStr(att));
+>             try {
+>                 System.out.println(method.invoke(object));
+>             } catch (IllegalAccessException e) {
+>                 e.printStackTrace();
+>             } catch (InvocationTargetException e) {
+>                 e.printStackTrace();
+>             }
+>         } catch (NoSuchMethodException e) {
+>             e.printStackTrace();
+>         }
+>     }
+> 
+>     /**
+>      * 单词首字母大写
+>      * @param old
+>      * @return
+>      */
+>     public static String initStr(String old) {
+>         String string = old.substring(0, 1).toUpperCase() + old.substring(1);
+>         return string;
+>     }
+> 
+>     public static void main(String[] args) {
+>         Class<?> c=null;
+>         Object object=null;
+>         try {
+>             c=Class.forName("reflect.Person");
+>         } catch (ClassNotFoundException e) {
+>             e.printStackTrace();
+>         }
+>         try {
+>             object=c.newInstance();
+>         } catch (InstantiationException e) {
+>             e.printStackTrace();
+>         } catch (IllegalAccessException e) {
+>             e.printStackTrace();
+>         }
+>         setter(object,"name","AlexanderBai",String.class);
+>         System.out.print("姓名：");
+>         getter(object, "name");
+>         setter(object,"age",21,int.class);
+>         System.out.print("年龄：");
+>         getter(object,"age");
+>     }
+> }
+> ```
+>
+> 
+
+
 
 ####3、通过反射操作属性
 
