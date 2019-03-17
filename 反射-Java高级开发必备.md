@@ -798,14 +798,231 @@ public class Test{
 >     }
 > }
 > ```
->
-> 
-
-
 
 ####3、通过反射操作属性
 
+- 类中变量已设置为私有，在使用Filed类的set和get方法前必须通过setAccessible()方法将私有属性设置为外部可访问
+
+```java
+package reflect;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+/**
+ * @Author AlexanderBai
+ * @data 2019/3/17 9:49
+ */
+interface China{
+    public static final String NATIONAL = "China";
+    public static final String NAME = "AlexanderBai";
+    public void sayChinese();
+    public String sayHello(String name);
+}
+class Person implements China{
+
+    private String name;
+    private int age;
+
+    public Person() {
+    }
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public Person(String name, int age) {
+        this.name=name;
+        this.age=age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    @Override
+    public void sayChinese() {
+        System.out.println("国籍:" +NATIONAL);
+    }
+
+    @Override
+    public String sayHello(String name) {
+        return "你好，我是"+name;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + this.name + '\'' +
+                ", age=" + this.age +
+                '}';
+    }
+}
+
+public class Test{
+    public static void main(String[] args) {
+        Class<?> c=null;
+        Object object=null;
+        Field nameField=null;
+        Field ageField=null;
+
+        try {
+            c=Class.forName("reflect.Person");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            object=c.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        try {
+            //取得属性
+            nameField=c.getDeclaredField("name");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        try {
+            ageField=c.getDeclaredField("age");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        //设置私有属性可被外部访问
+        nameField.setAccessible(true);
+        ageField.setAccessible(true);
+        try {
+            //设置属性内容
+            nameField.set(object,"AlexanderBai");
+            ageField.set(object,21);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        try {
+            System.out.println("姓名： " + nameField.get(object));
+            System.out.println("年龄：" + ageField.get(object));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
 ####4、通过反射操作数组
+
+> - 取得数组信息并修改数组内容
+>
+>   ```java
+>   package test;
+>   
+>   import java.lang.reflect.Array;
+>   
+>   /**
+>    * @Author AlexanderBai
+>    * @data 2019/3/17 15:18
+>    */
+>   public class Demo {
+>       public static void main(String[] args) {
+>           int temp[] = {1, 2, 3};
+>           //取得数组的Class对象
+>           Class<?> componentType=temp.getClass().getComponentType();
+>           //取得数组类型名称
+>           System.out.println("类型:"+componentType.getTypeName());
+>           //取得数组长度
+>           System.out.println("长度："+ Array.getLength(temp));
+>           //取得数组第一个内容
+>           System.out.println("第一个内容："+Array.get(temp,0));
+>           //修改第一个内容
+>           Array.set(temp,0,6);
+>           System.out.println("第一个内容："+Array.get(temp,0));
+>       }
+>   }
+>   ```
+>
+> - 修改数组的大小
+>
+>   ```java
+>   package test;
+>   
+>   import java.lang.reflect.Array;
+>   
+>   /**
+>    * @Author AlexanderBai
+>    * @data 2019/3/17 15:18
+>    */
+>   public class Demo {
+>       /**
+>        *修改数组的大小
+>        * @param object 原数组
+>        * @param len   数组要扩容至的值
+>        * @return      
+>        */
+>       public static Object arrayInc(Object object, int len) {
+>           //通过数组得到Class对象
+>           Class<?> c=object.getClass();
+>           //得到数组的Class对象
+>           Class<?> componentType=c.getComponentType();
+>           //重新开辟新的数组大小
+>           Object newO=Array.newInstance(componentType,len);
+>           //
+>           int length=Array.getLength(object);
+>   
+>           /**复制数组内容
+>            * @param      src      the source array.
+>            * @param      srcPos   starting position in the source array.
+>            * @param      dest     the destination array.
+>            * @param      destPos  starting position in the destination data.
+>            * @param      length   the number of array elements to be copied.
+>            */
+>           System.arraycopy(object,0,newO,0,length);
+>           return newO;
+>       }
+>   
+>       /**
+>        * 输出数组
+>        * @param object 要输出的数组
+>        */
+>       public static void print(Object object) {
+>           Class<?> c=object.getClass();
+>           if (!c.isArray()) {
+>               return;
+>           }
+>           Class<?> classComponentType=c.getComponentType();
+>           System.out.println(classComponentType.getName() +
+>                   "数组的长度是：" + Array.getLength(object));
+>           for (int i = 0; i < Array.getLength(object); i++) {
+>               System.out.print(Array.get(object, i)+"、");
+>           }
+>           System.out.println();
+>       }
+>   
+>       public static void main(String[] args) {
+>           int temp[] = {1, 2, 3};
+>           int newTemo[]= (int[]) arrayInc(temp, 5);
+>           print(newTemo);
+>           System.out.println("-------------------");
+>           String string[]= {"agag", "ag", "gag"};
+>           String newString[]= (String[]) arrayInc(string, 6);
+>           print(newString);
+>       }
+>   }
+>   ```
+>
+>   
 
 ### 四、ClassLoader加载类
 
