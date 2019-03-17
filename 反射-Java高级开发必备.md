@@ -241,6 +241,197 @@ public class Deme {
 
 ### 二、反射的应用-取得类的结构
 
+#### 1、取得所实现的全部接口
+
+​	java允许多实现，所以获取的接口以数组方式返回
+
+```java
+public Class<?>[] getInterfaces()
+```
+
+#### 2、取得父类
+
+```java
+public static Class<? super T> getSuperclass()
+```
+
+#### 3、取得全部构造方法
+
+```java
+public Constructor<?>[] getConstructors()
+```
+
+#### 4、取得全部方法
+
+```java
+public Method[] getMethods()
+```
+
+####5、取得全部属性
+
+```java
+public Field[] getFields()
+```
+
+####6、getFields()和getDeclaredFields()的区别
+
+- 这两个方法很像，但所获取的属性并不一样，getFields()获取的是所有**可以获取**的属性（包括接口、父类和本类）getDeclaredFields()获取的属性不包括父类的属性
+
+- 且需要注意的是以上方法不能获取私有属性，私有属性需要设置访问权限才可访问
+- 同样类似的还有**getConstructors()**和**getDeclaredConstructors()**、**getMethods()**和**getDeclaredMethods()**，这两者分别表示获取某个类的方法、构造函数。
+
+>```java
+>/**
+>	*getDeclaredFields()
+>	*Returns an array of {@code Field} objects reflecting all the fields
+>    * declared by the class or interface represented by this
+>    * {@code Class} object. This includes public, protected, default
+>    * (package) access, and private fields, but excludes(移除) inherited fields.
+>**/
+>```
+
+>```java
+>/**
+>*getFields()说明
+>- Returns a {@code Field} object that reflects the specified public member
+>- field of the class or interface represented by this {@code Class}
+>- object. The {@code name} parameter is a {@code String} specifying the
+>- simple name of the desired field.
+>**/
+>
+>```
+
+
+
+####7、示例
+
+```java
+package reflect;
+
+import java.lang.reflect.*;
+
+/**
+ * @Author AlexanderBai
+ * @data 2019/3/17 9:49
+ */
+interface China{
+    public static final String NATIONAL = "China";
+    public static final String NAME = "AlexanderBai";
+    public void sayChinese();
+    public String sayHello(String name);
+}
+class Person implements China{
+
+    private String name;
+    private int age;
+
+    public Person() {
+    }
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public Person(String name, int age) {
+        this.name=name;
+        this.age=age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    @Override
+    public void sayChinese() {
+        System.out.println("国籍" +NATIONAL);
+    }
+
+    @Override
+    public String sayHello(String name) {
+        return "你好，我是"+NAME;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + this.name + '\'' +
+                ", age=" + this.age +
+                '}';
+    }
+}
+
+public class Test{
+    public static void main(String[] args) {
+        Class<?> c=null;
+        try {
+            c=Class.forName("reflect.Person");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Class<?> interfaces[]=c.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++) {
+            System.out.println("获取接口的名称：" + interfaces[i]);
+        }
+        System.out.println("获取父类的名称：" + c.getSuperclass());
+        System.out.println();
+
+        Constructor<?> constructors[]=c.getConstructors();
+        for (Constructor<?> constructor : constructors) {
+            System.out.println("获取构造方法的名称：" + constructor);
+        }
+        System.out.println();
+        Method methods[]=c.getMethods();
+        //Method methods1[]=c.getDeclaredMethods();
+        for (int i = 0; i < methods.length; i++) {
+            Class<?> parameterTypes[]=methods[i].getParameterTypes();
+            Parameter parameters[]=methods[i].getParameters();
+
+            System.out.println("取得方法的修饰符：" + Modifier.toString(methods[i].getModifiers()));
+            System.out.println("取得方法的返回值类型：" + methods[i].getReturnType());
+            System.out.println("取得方法名称：" + methods[i].getName());
+            for (Class<?> parameterType : parameterTypes){
+                System.out.println("取得参数类型名称：" + parameterType);
+            }
+            for (Parameter parameter : parameters) {
+                System.out.println("取得方法的参数： " + parameter);
+            }
+            System.out.println();
+        }
+
+        System.out.println();
+        System.out.println("-----------取得本类属性-----------");
+        Field field[]=c.getDeclaredFields();
+        for (int i = 0; i < field.length; i++) {
+            System.out.println("属性修饰符："+Modifier.toString(field[i].getModifiers()));
+            System.out.println("属性类型：" + field[i].getType());
+            System.out.println("属性名称：" + field[1].getName());
+        }
+
+        System.out.println();
+        System.out.println("-----------取得父类属性-----------");
+        Field field1[]=c.getDeclaredFields();
+        for (int i = 0; i < field1.length; i++) {
+            System.out.println("属性修饰符："+Modifier.toString(field1[i].getModifiers()));
+            System.out.println("属性类型：" + field1[i].getType());
+            System.out.println("属性名称：" + field1[1].getName());
+        }
+    }
+}
+```
+
 ### 三、Java反射机制的深入应用
 
 ### 四、ClassLoader加载类
