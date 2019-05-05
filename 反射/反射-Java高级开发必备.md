@@ -275,7 +275,7 @@ public Field[] getFields()
 
 ####6、getFields()和getDeclaredFields()的区别
 
-- 这两个方法很像，但所获取的属性并不一样，getFields()获取的是所有**可以获取**的属性（包括接口、父类和本类）getDeclaredFields()获取的属性不包括父类的属性
+- 这两个方法很像，但所获取的属性并不一样，getFields()获取的是所有**可以获取**的属性（包括**父接口和父类但不包括本类**），getDeclaredFields()获取的属性**只包括本类可以获取**的属性
 
 - 且需要注意的是以上方法不能获取私有属性，私有属性需要设置访问权限才可访问
 - 同样类似的还有**getConstructors()**和**getDeclaredConstructors()**、**getMethods()**和**getDeclaredMethods()**，这两者分别表示获取某个类的方法、构造函数。
@@ -422,7 +422,7 @@ public class Test{
 
         System.out.println();
         System.out.println("-----------取得父类属性-----------");
-        Field field1[]=c.getDeclaredFields();
+        Field field1[]=c.getFields();
         for (int i = 0; i < field1.length; i++) {
             System.out.println("属性修饰符："+Modifier.toString(field1[i].getModifiers()));
             System.out.println("属性类型：" + field1[i].getType());
@@ -665,137 +665,139 @@ public class Test{
 > import java.lang.reflect.InvocationTargetException;
 > import java.lang.reflect.Method;
 > 
-> /**
->  * @Author AlexanderBai
->  * @data 2019/3/17 9:49
->  */
 > interface China{
->     public static final String NATIONAL = "China";
->     public static final String NAME = "AlexanderBai";
->     public void sayChinese();
->     public String sayHello(String name);
+>  public static final String NATIONAL = "China";
+>  public static final String NAME = "AlexanderBai";
+>  public void sayChinese();
+>  public String sayHello(String name);
 > }
 > class Person implements China{
 > 
->     private String name;
->     private int age;
+>  private String name;
+>  private int age;
 > 
->     public Person() {
->     }
+>  public Person() {
+>  }
 > 
->     public Person(String name) {
->         this.name = name;
->     }
+>  public Person(String name) {
+>      this.name = name;
+>  }
 > 
->     public Person(String name, int age) {
->         this.name=name;
->         this.age=age;
->     }
+>  public Person(String name, int age) {
+>      this.name=name;
+>      this.age=age;
+>  }
 > 
->     public void setAge(int age) {
->         this.age = age;
->     }
+>  public void setAge(int age) {
+>      this.age = age;
+>  }
 > 
->     public void setName(String name) {
->         this.name = name;
->     }
->     public int getAge() {
->         return age;
->     }
+>  public void setName(String name) {
+>      this.name = name;
+>  }
+>  public int getAge() {
+>      return age;
+>  }
 > 
->     public String getName() {
->         return name;
->     }
+>  public String getName() {
+>      return name;
+>  }
 > 
 > 
->     @Override
->     public void sayChinese() {
->         System.out.println("国籍:" +NATIONAL);
->     }
+>  @Override
+>  public void sayChinese() {
+>      System.out.println("国籍:" +NATIONAL);
+>  }
 > 
->     @Override
->     public String sayHello(String name) {
->         return "你好，我是"+name;
->     }
+>  @Override
+>  public String sayHello(String name) {
+>      return "你好，我是"+name;
+>  }
 > 
->     @Override
->     public String toString() {
->         return "Person{" +
->                 "name='" + this.name + '\'' +
->                 ", age=" + this.age +
->                 '}';
->     }
+>  @Override
+>  public String toString() {
+>      return "Person{" +
+>              "name='" + this.name + '\'' +
+>              ", age=" + this.age +
+>              '}';
+>  }
 > }
+>  
+> /**
+>  * @Author AlexanderBai
+>  * @data 2019/3/17 9:49
+>  *使用反射调用setter和getter方法 
+> */
 > 
 > public class Test{
->     /**
+>  /**
 >      * @param object   操作的对象
 >      * @param att     操作的属性
 >      * @param value   设置的值    
 >      * @param type    参数的类型
->      */
->     public static void setter(Object object, String att, Object value,Class<?> type){
->         try {
->             Method method=object.getClass().getMethod("set" + initStr(att), type);
->             try {
->                 method.invoke(object, value);
->             } catch (IllegalAccessException e) {
->                 e.printStackTrace();
->             } catch (InvocationTargetException e) {
->                 e.printStackTrace();
->             }
->         } catch (NoSuchMethodException e) {
->             e.printStackTrace();
->         }
->     }
+>   */
+>  public static void setter(Object object, String att, Object value,Class<?> type){
+>      try {
+>          Method method=object.getClass().getMethod("set" + initStr(att), type);
+>          try {
+>              method.invoke(object, value);
+>          } catch (IllegalAccessException e) {
+>              e.printStackTrace();
+>          } catch (InvocationTargetException e) {
+>              e.printStackTrace();
+>          }
+>      } catch (NoSuchMethodException e) {
+>          e.printStackTrace();
+>      }
+>  }
 > 
->     public static void getter(Object object, String att) {
->         try {
->             Method method = object.getClass().getMethod("get" + initStr(att));
->             try {
->                 System.out.println(method.invoke(object));
->             } catch (IllegalAccessException e) {
->                 e.printStackTrace();
->             } catch (InvocationTargetException e) {
->                 e.printStackTrace();
->             }
->         } catch (NoSuchMethodException e) {
->             e.printStackTrace();
->         }
->     }
+>  public static void getter(Object object, String att) {
+>      try {
+>          Method method = object.getClass().getMethod("get" + initStr(att));
+>          try {
+>              System.out.println(method.invoke(object));
+>          } catch (IllegalAccessException e) {
+>              e.printStackTrace();
+>          } catch (InvocationTargetException e) {
+>              e.printStackTrace();
+>          }
+>      } catch (NoSuchMethodException e) {
+>          e.printStackTrace();
+>      }
+>  }
 > 
->     /**
+>  /**
 >      * 单词首字母大写
 >      * @param old
 >      * @return
->      */
->     public static String initStr(String old) {
->         String string = old.substring(0, 1).toUpperCase() + old.substring(1);
->         return string;
->     }
+>   */
+>  public static String initStr(String old) {
+>      String string = old.substring(0, 1).toUpperCase() + old.substring(1);
+>      return string;
+>  }
 > 
->     public static void main(String[] args) {
->         Class<?> c=null;
->         Object object=null;
->         try {
->             c=Class.forName("reflect.Person");
->         } catch (ClassNotFoundException e) {
->             e.printStackTrace();
->         }
->         try {
->             object=c.newInstance();
->         } catch (InstantiationException e) {
->             e.printStackTrace();
->         } catch (IllegalAccessException e) {
->             e.printStackTrace();
->         }
->         setter(object,"name","AlexanderBai",String.class);
->         System.out.print("姓名：");
->         getter(object, "name");
->         setter(object,"age",21,int.class);
->         System.out.print("年龄：");
->         getter(object,"age");
->     }
+>  public static void main(String[] args) {
+>      Class<?> c=null;
+>      Object object=null;
+>      try {
+>          c=Class.forName("reflect.Person");
+>      } catch (ClassNotFoundException e) {
+>          e.printStackTrace();
+>      }
+>      try {
+>          object=c.newInstance();
+>      } catch (InstantiationException e) {
+>          e.printStackTrace();
+>      } catch (IllegalAccessException e) {
+>          e.printStackTrace();
+>      }
+>      setter(object,"name","AlexanderBai",String.class);
+>      System.out.print("姓名：");
+>      getter(object, "name");
+>      setter(object,"age",21,int.class);
+>      System.out.print("年龄：");
+>      getter(object,"age");
+>  }
 > }
 > ```
 
@@ -964,7 +966,7 @@ public class Test{
 >    * @Author AlexanderBai
 >    * @data 2019/3/17 15:18
 >    */
->   public class Demo {
+>   public class TestChangeArrayLength {
 >       /**
 >        *修改数组的大小
 >        * @param object 原数组
@@ -1022,7 +1024,6 @@ public class Test{
 >   }
 >   ```
 >
->   
 
 ### 四、ClassLoader加载类
 
